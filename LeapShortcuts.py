@@ -62,22 +62,22 @@ class DesktopListener(Leap.Listener):
 				for finger in fingers:
 					avg_pos += finger.tip_position
 				avg_pos /= len(fingers)
-				print "Hand has %d fingers, average finger tip position: %s" % (
-					  len(fingers), avg_pos)
+				logging.debug("Hand has %d fingers, average finger tip position: %s" % (
+					  len(fingers), avg_pos))
 
 			# Get the hand's sphere radius and palm position
-			print "Hand sphere radius: %f mm, palm position: %s" % (
-				  hand.sphere_radius, hand.palm_position)
+			#print "Hand sphere radius: %f mm, palm position: %s" % (
+			#	  hand.sphere_radius, hand.palm_position)
 
 			# Get the hand's normal vector and direction
 			normal = hand.palm_normal
 			direction = hand.direction
 
 			# Calculate the hand's pitch, roll, and yaw angles
-			print "Hand pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (
-				direction.pitch * Leap.RAD_TO_DEG,
-				normal.roll * Leap.RAD_TO_DEG,
-				direction.yaw * Leap.RAD_TO_DEG)
+			#print "Hand pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (
+			#	direction.pitch * Leap.RAD_TO_DEG,
+			#	normal.roll * Leap.RAD_TO_DEG,
+			#	direction.yaw * Leap.RAD_TO_DEG)
 
 			# Gestures
 			for gesture in frame.gestures():
@@ -96,34 +96,32 @@ class DesktopListener(Leap.Listener):
 						previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
 						swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
 
-					print "Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees, %s" % (
+					logging.debug("Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees, %s" % (
 							gesture.id, self.state_string(gesture.state),
-							circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness)
+							circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness))
 
 				if gesture.type == Leap.Gesture.TYPE_SWIPE:
 					swipe = SwipeGesture(gesture)
-					print "Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
+					logging.debug("Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
 							gesture.id, self.state_string(gesture.state),
-							swipe.position, swipe.direction, swipe.speed)
+							swipe.position, swipe.direction, swipe.speed))
 					if swipe.direction.x < self.SWIPE_DETECT and abs(swipe.direction.y) < self.SWIPE_TOLERANCE:
 						subprocess.call(['xte', 'keydown Control_L', 'keydown Alt_L', 'key Left', 'keyup Alt_L', 'keyup Control_L'])
 					elif swipe.direction.x > self.SWIPE_DETECT and abs(swipe.direction.y) < self.SWIPE_TOLERANCE:
 						subprocess.call(['xte', 'keydown Control_L', 'keydown Alt_L', 'key Right', 'keyup Alt_L', 'keyup Control_L'])
-						# gnome-screensaver-command --lock
 
 				if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
 					keytap = KeyTapGesture(gesture)
-					print "Key Tap id: %d, %s, position: %s, direction: %s" % (
+					logging.debug("Key Tap id: %d, %s, position: %s, direction: %s" % (
 							gesture.id, self.state_string(gesture.state),
-							keytap.position, keytap.direction )
+							keytap.position, keytap.direction ))
 
 				if gesture.type == Leap.Gesture.TYPE_SCREEN_TAP:
 					screentap = ScreenTapGesture(gesture)
-					print "Screen Tap id: %d, %s, position: %s, direction: %s" % (
+					logging.debug("Screen Tap id: %d, %s, position: %s, direction: %s" % (
 							gesture.id, self.state_string(gesture.state),
-							screentap.position, screentap.direction )
-
-				time.sleep(0.2)
+							screentap.position, screentap.direction ))
+					subprocess.call(['gnome-screensaver-command', '--lock'])
 
 		
 	def state_string(self, state):
