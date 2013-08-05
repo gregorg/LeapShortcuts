@@ -24,3 +24,5 @@ pip-log.txt
 # LeapSDK files
 Leap.py
 
+# vim swap files
+*.sw?
