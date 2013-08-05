@@ -25,6 +25,7 @@ class DesktopListener(Leap.Listener):
 		self.thumbId = 0
 		self.seenIds = []
 		self.mouseDown = False
+		self.circle_progress = 0.0
 		logging.info("Initialized")
 
 	def on_connect(self, controller):
@@ -62,8 +63,8 @@ class DesktopListener(Leap.Listener):
 				for finger in fingers:
 					avg_pos += finger.tip_position
 				avg_pos /= len(fingers)
-				logging.debug("Hand has %d fingers, average finger tip position: %s" % (
-					  len(fingers), avg_pos))
+				#logging.debug("Hand has %d fingers, average finger tip position: %s" % (
+				#	  len(fingers), avg_pos))
 
 			# Get the hand's sphere radius and palm position
 			#print "Hand sphere radius: %f mm, palm position: %s" % (
@@ -100,6 +101,19 @@ class DesktopListener(Leap.Listener):
 							gesture.id, self.state_string(gesture.state),
 							circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness))
 
+					if circle.state in (Leap.Gesture.STATE_START, Leap.Gesture.STATE_STOP):
+						self.circle_progress = circle.progress
+					
+					elif circle.state == Leap.Gesture.STATE_UPDATE:
+						logging.debug("Circle=%f Progress=%f Diff=%f"%(circle.progress, self.circle_progress, (circle.progress-self.circle_progress)))
+						if circle.progress - self.circle_progress > 0.04:
+							volume = '1%-'
+							if clockwiseness == 'clockwise':
+								volume = '1%+'
+							subprocess.call(['amixer', 'set', 'Master,0', volume])
+						self.circle_progress = circle.progress
+
+
 				if gesture.type == Leap.Gesture.TYPE_SWIPE:
 					swipe = SwipeGesture(gesture)
 					logging.debug("Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
@@ -121,7 +135,7 @@ class DesktopListener(Leap.Listener):
 					logging.debug("Screen Tap id: %d, %s, position: %s, direction: %s" % (
 							gesture.id, self.state_string(gesture.state),
 							screentap.position, screentap.direction ))
-					subprocess.call(['gnome-screensaver-command', '--lock'])
+					#subprocess.call(['gnome-screensaver-command', '--lock'])
 
 		
 	def state_string(self, state):
